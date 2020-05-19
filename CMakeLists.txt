@@ -40,6 +40,7 @@ if(WIN32)
   list(
       APPEND
       minichromium_sources
+      mini_chromium/base/scoped_clear_last_error_win.cc
       mini_chromium/base/strings/string_util_win.cc
       mini_chromium/base/synchronization/lock_impl_win.cc
       mini_chromium/base/threading/thread_local_storage_win.cc
