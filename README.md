@@ -5,7 +5,7 @@ Based on existing works to provide a CMake solution for Crashpad we've put this 
 
 ## Getting started
 
-Add this repository as a submodule of your CMake project and then add it using the `add_submodule` directive.
+Add this repository as a submodule of your CMake project and then include it using the `add_subdirectory` directive from your CMakeLists.txt.
 
 Next, initialize Crashpad using something similar to this example. Refer to [the Crashpad documentation](https://crashpad.chromium.org/doxygen/index.html) if in doubt.
 
@@ -41,6 +41,8 @@ bool InitializeCrashpad()
   return success;
 }
 ```
+
+Finally you need to link your cmake target against `crashpad_client` and distribute the handler with your application.
 
 ## Contributing
 Crashpad is under continuous development so feel free to submit pull requests to update the underlying submodules.
