@@ -104,6 +104,7 @@ target_compile_definitions(
     -DUNICODE
     -DWIN32
     -DWIN32_LEAN_AND_MEAN
+	-D_CRT_SECURE_NO_WARNINGS
 )
 
 target_include_directories(
