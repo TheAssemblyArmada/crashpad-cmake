@@ -5,7 +5,17 @@ Based on existing works to provide a CMake solution for Crashpad we've put this 
 
 ## Getting started
 
-Add this repository as a submodule of your CMake project and then include it using the `add_subdirectory` directive from your CMakeLists.txt.
+There are various ways to include this in your own project. One is to just add it to your soruce tree if you want to customise it or maintain it yourself. Another is to add this repository as a submodule of your CMake project and then add it using the `add_submodule` directive. Finally you could use the CMake FetchContent module as follows:
+
+```CMake
+include(FetchContent)
+FetchContent_Declare(
+  crashpad_cmake
+  GIT_REPOSITORY https://github.com/TheAssemblyArmada/crashpad-cmake.git
+  GIT_TAG        deadbeef  # Put the commit ref you want to build here.
+)
+FetchContent_MakeAvailable(crashpad_cmake)
+```
 
 Next, initialize Crashpad using something similar to this example. Refer to [the Crashpad documentation](https://crashpad.chromium.org/doxygen/index.html) if in doubt.
 
@@ -42,7 +52,14 @@ bool InitializeCrashpad()
 }
 ```
 
-Finally you need to link your cmake target against `crashpad_client` and distribute the handler with your application.
+You will also need to link your target against crashpad_client.
+
+```CMake
+add_executable(MyProgram myprogram.cpp)
+target_link_libraries(MyProgram PRIVATE crashpad_client)
+```
+
+Finally you will want to distribute the crashpad_handler with your program so it can run in the background catch your program crashing.
 
 ## Contributing
 Crashpad is under continuous development so feel free to submit pull requests to update the underlying submodules.
