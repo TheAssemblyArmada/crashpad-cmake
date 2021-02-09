@@ -1,3 +1,4 @@
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 cmake_minimum_required(VERSION 3.0)
 project(crashpad LANGUAGES C CXX)
 
@@ -11,7 +12,7 @@ endif()
 include(FetchContent)
 
 # Try to find prebuilt zlib on the system to link against first before building it ourselves.
-find_package(ZLIB)
+find_package(ZLIB 1.2.8)
 
 # If not found, we fetch it and build it ourselves.
 if(NOT ZLIB_FOUND AND NOT TARGET ZLIB::ZLIB)
@@ -103,20 +104,34 @@ endif()
 
 add_library(minichromium STATIC ${minichromium_sources})
 
-target_compile_definitions(
-    minichromium
-    PRIVATE
-    -DNOMINMAX
-    -DUNICODE
-    -DWIN32
-    -DWIN32_LEAN_AND_MEAN
-)
-
 target_include_directories(
     minichromium
     PUBLIC
     ${mini_chromium_git_SOURCE_DIR}
 )
+
+if(WIN32)
+	target_compile_definitions(
+		minichromium
+		PRIVATE
+		-DNOMINMAX
+		-DUNICODE
+		-DWIN32
+		-DWIN32_LEAN_AND_MEAN
+	)
+endif()
+
+if(APPLE)
+	target_link_libraries(
+		minichromium
+		PRIVATE
+		"-framework ApplicationServices"
+		"-framework CoreFoundation"
+		"-framework Foundation"
+		"-framework IOKit"
+		"-framework Security"
+	)
+endif()
 
 # Crashpad
 FetchContent_Declare(
@@ -250,6 +265,7 @@ endif()
 set(
 	util_sources
 	${crashpad_git_SOURCE_DIR}/util/file/delimited_file_reader.cc
+	${crashpad_git_SOURCE_DIR}/util/file/file_helper.cc
 	${crashpad_git_SOURCE_DIR}/util/file/file_io.cc
 	${crashpad_git_SOURCE_DIR}/util/file/file_reader.cc
 	${crashpad_git_SOURCE_DIR}/util/file/file_seeker.cc
@@ -320,6 +336,7 @@ if(APPLE)
 		${crashpad_git_SOURCE_DIR}/util/mac/mac_util.cc
 		${crashpad_git_SOURCE_DIR}/util/mac/service_management.cc
 		${crashpad_git_SOURCE_DIR}/util/mac/xattr.cc
+		${crashpad_git_SOURCE_DIR}/util/mach/bootstrap.cc
 		${crashpad_git_SOURCE_DIR}/util/mach/child_port_handshake.cc
 		${crashpad_git_SOURCE_DIR}/util/mach/child_port_server.cc
 		${crashpad_git_SOURCE_DIR}/util/mach/composite_mach_message_server.cc
@@ -335,13 +352,12 @@ if(APPLE)
 		${crashpad_git_SOURCE_DIR}/util/mach/scoped_task_suspend.cc
 		${crashpad_git_SOURCE_DIR}/util/mach/symbolic_constants_mach.cc
 		${crashpad_git_SOURCE_DIR}/util/mach/task_for_pid.cc
-		${crashpad_git_SOURCE_DIR}/util/mach/task_memory.cc
 		${crashpad_git_SOURCE_DIR}/util/misc/capture_context_mac.S
 		${crashpad_git_SOURCE_DIR}/util/misc/clock_mac.cc
 		${crashpad_git_SOURCE_DIR}/util/misc/paths_mac.cc
 		${crashpad_git_SOURCE_DIR}/util/net/http_transport_mac.mm
 		${crashpad_git_SOURCE_DIR}/util/posix/process_info_mac.cc
-		${crashpad_git_SOURCE_DIR}/util/posix/process_memory_mac.cc
+		${crashpad_git_SOURCE_DIR}/util/process/process_memory_mac.cc
 		${crashpad_git_SOURCE_DIR}/util/synchronization/semaphore_mac.cc
 	)
 endif()
@@ -462,6 +478,39 @@ else()
 endif()
 
 if(APPLE)
+	# The Apple target needs files generating with python
+	find_file(EXC_DEFS exc.defs PATH_SUFFIXES /mach)
+	find_file(MACH_EXC_DEFS mach_exc.defs PATH_SUFFIXES /mach)
+	find_file(NOTIFY_DEFS notify.defs PATH_SUFFIXES /mach)
+	message("Found exc.defs at ${EXC_DEFS}")
+	message("Found mach_exc.defs at ${MACH_EXC_DEFS}")
+	message("Found notify.defs at ${NOTIFY_DEFS}")
+	include(crashpad-mig)
+
+	target_add_mig_sources(crashpad_util ${EXC_DEFS}
+		COMPILE_SERVER TRUE
+		COMPILE_CLIENT TRUE
+		TARGET_DIR "${crashpad_git_SOURCE_DIR}/util/mach"
+	)
+
+	target_add_mig_sources(crashpad_util ${MACH_EXC_DEFS}
+		COMPILE_SERVER TRUE
+		COMPILE_CLIENT TRUE
+		TARGET_DIR "${crashpad_git_SOURCE_DIR}/util/mach"
+	)
+
+	target_add_mig_sources(crashpad_util ${NOTIFY_DEFS}
+		COMPILE_SERVER TRUE
+		COMPILE_CLIENT TRUE
+		TARGET_DIR "${crashpad_git_SOURCE_DIR}/util/mach"
+	)
+
+	target_add_mig_sources(crashpad_util ${crashpad_git_SOURCE_DIR}/util/mach/child_port.defs
+		COMPILE_SERVER TRUE
+		COMPILE_CLIENT TRUE
+		TARGET_DIR "${crashpad_git_SOURCE_DIR}/util/mach"
+	)
+
 	target_link_libraries(
 		crashpad_util
 		PRIVATE
@@ -597,7 +646,7 @@ endif()
 target_include_directories(
     crashpad_minidump
     PUBLIC
-    crashpad
+    ${crashpad_git_SOURCE_DIR}
 )
 
 target_link_libraries(
@@ -612,6 +661,12 @@ if(NOT APPLE)
 		crashpad_minidump
 		PRIVATE
 		crashpad_compat
+	)
+else()
+	target_include_directories(
+		crashpad_minidump
+		PUBLIC
+		${crashpad_git_SOURCE_DIR}/compat/non_win
 	)
 endif()
 
@@ -633,13 +688,10 @@ set(
 	${crashpad_git_SOURCE_DIR}/snapshot/minidump/minidump_string_reader.cc
 	${crashpad_git_SOURCE_DIR}/snapshot/minidump/module_snapshot_minidump.cc
 	${crashpad_git_SOURCE_DIR}/snapshot/minidump/process_snapshot_minidump.cc
-	${crashpad_git_SOURCE_DIR}/snapshot/minidump/exception_snapshot_minidump.cc
 	${crashpad_git_SOURCE_DIR}/snapshot/minidump/system_snapshot_minidump.cc
 	${crashpad_git_SOURCE_DIR}/snapshot/minidump/thread_snapshot_minidump.cc
 	${crashpad_git_SOURCE_DIR}/snapshot/unloaded_module_snapshot.cc
 	${crashpad_git_SOURCE_DIR}/snapshot/x86/cpuid_reader.cc
-	${crashpad_git_SOURCE_DIR}/snapshot/crashpad_types/crashpad_info_reader.cc
-	${crashpad_git_SOURCE_DIR}/snapshot/crashpad_types/image_annotation_reader.cc
 )
 
 if(UNIX)
@@ -664,14 +716,14 @@ if(APPLE)
 		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_reader_mac.cc
 		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_snapshot_mac.cc
 		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types.cc
-		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/all.proctype
-		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/annotation.proctype
-		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/crashpad_info.proctype
-		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/crashreporterclient.proctype
+		#${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/all.proctype
+		#${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/annotation.proctype
+		#${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/crashpad_info.proctype
+		#${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/crashreporterclient.proctype
 		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/custom.cc
-		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/dyld_images.proctype
-		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/loader.proctype
-		${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/nlist.proctype
+		#${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/dyld_images.proctype
+		#${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/loader.proctype
+		#${crashpad_git_SOURCE_DIR}/snapshot/mac/process_types/nlist.proctype
 		${crashpad_git_SOURCE_DIR}/snapshot/mac/system_snapshot_mac.cc
 		${crashpad_git_SOURCE_DIR}/snapshot/mac/thread_snapshot_mac.cc
 	)
@@ -681,6 +733,7 @@ if(UNIX AND NOT APPLE)
 	list(
 		APPEND
 		snapshot_sources
+		${crashpad_git_SOURCE_DIR}/snapshot/crashpad_types/image_annotation_reader.cc
 		${crashpad_git_SOURCE_DIR}/snapshot/linux/cpu_context_linux.cc
 		${crashpad_git_SOURCE_DIR}/snapshot/linux/debug_rendezvous.cc
 		${crashpad_git_SOURCE_DIR}/snapshot/linux/exception_snapshot_linux.cc
@@ -749,6 +802,12 @@ if(NOT APPLE)
 		crashpad_snapshot
 		PRIVATE
 		crashpad_compat
+	)
+else()
+	target_include_directories(
+		crashpad_snapshot
+		PUBLIC
+		${crashpad_git_SOURCE_DIR}/compat/non_win
 	)
 endif()
 

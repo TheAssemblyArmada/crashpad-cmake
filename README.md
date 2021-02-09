@@ -63,5 +63,3 @@ Finally you will want to distribute the crashpad_handler with your program so it
 
 ## Contributing
 Crashpad is under continuous development so feel free to submit pull requests to update the underlying submodules.
-
-Currently building on macOS is untested but in theory is possible. Please feed back if any changes are required to make it build on that platform.
