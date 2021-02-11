@@ -1,4 +1,4 @@
-find_package(Python COMPONENTS Interpreter)
+find_package(Python2 COMPONENTS Interpreter REQUIRED)
 find_program(MIG_EXE mig REQUIRED)
 message("Found mig at ${MIG_EXE}")
 
@@ -38,7 +38,7 @@ function(target_add_mig_sources target filename)
                 ${MIG_TARGET_DIR}/${basename}${MIG_SERVER_SOURCE_SUFFIX}
                 ${MIG_TARGET_DIR}/${basename}${MIG_USER_HEADER_SUFFIX}
                 ${MIG_TARGET_DIR}/${basename}${MIG_SERVER_HEADER_SUFFIX}
-        COMMAND ${PYTHON_EXECUTABLE}
+        COMMAND ${Python2_EXECUTABLE}
         ARGS    ${crashpad_git_SOURCE_DIR}/util/mach/mig.py
                 ${filename}
                 ${MIG_TARGET_DIR}/${basename}${MIG_USER_SOURCE_SUFFIX}
