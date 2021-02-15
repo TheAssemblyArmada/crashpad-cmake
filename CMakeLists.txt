@@ -8,6 +8,15 @@ else()
     enable_language(ASM)
 endif()
 
+# Option to build unit tests.
+option(CRASHPAD_BUILD_TESTS "Build unit tests." OFF)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# Disable tests supplied by zlib source incase we have to build it.
+configure_file(${CMAKE_SOURCE_DIR}/cmake/CTestCustom.cmake ${CMAKE_BINARY_DIR})
+
 # We are going to use the FetchContent module to grab crashpad and its dependencies.
 include(FetchContent)
 
@@ -91,5 +100,29 @@ include(crashpad-minidump)
 include(crashpad-snapshot)
 include(crashpad-handler)
 
+# If we want unit tests, build them.
+if(CRASHPAD_BUILD_TESTS)
+    enable_testing()
 
+    # Fetch googletest code.
+    include(GoogleTest)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        release-1.10.0
+    )
 
+    # We don't use FetchContent_MakeAvailable here because we don't want all googletest targets including, just our dependencies.
+    FetchContent_GetProperties(googletest)
+    if(NOT googletest_POPULATED)
+        FetchContent_Populate(googletest)
+    endif()
+    include(gtest)
+    include(crashpad-test)
+    include(crashpad-test-test)
+    include(crashpad-util-test)
+    include(crashpad-snapshot-test)
+    include(crashpad-minidump-test)
+    include(crashpad-client-test)
+    include(crashpad-handler-test)
+endif()
