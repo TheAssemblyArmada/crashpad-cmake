@@ -9,6 +9,11 @@ set_target_properties(crashpad_client PROPERTIES
     VISIBILITY_INLINES_HIDDEN ON
 )
 
+target_include_directories(crashpad_client PUBLIC
+    ${mini_chromium_git_SOURCE_DIR}
+    ${crashpad_git_SOURCE_DIR}
+)
+
 target_link_libraries(crashpad_client PRIVATE
     minichromium
     crashpad_common
