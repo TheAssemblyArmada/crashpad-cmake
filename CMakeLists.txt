@@ -14,9 +14,6 @@ option(CRASHPAD_BUILD_TESTS "Build unit tests." OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# Disable tests supplied by zlib source incase we have to build it.
-configure_file(${CMAKE_SOURCE_DIR}/cmake/CTestCustom.cmake ${CMAKE_BINARY_DIR})
-
 # We are going to use the FetchContent module to grab crashpad and its dependencies.
 include(FetchContent)
 
@@ -102,6 +99,10 @@ include(crashpad-handler)
 
 # If we want unit tests, build them.
 if(CRASHPAD_BUILD_TESTS)
+
+
+    # Disable tests supplied by zlib source incase we have to build it.
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CTestCustom.cmake ${CMAKE_BINARY_DIR})
     enable_testing()
 
     # Fetch googletest code.
