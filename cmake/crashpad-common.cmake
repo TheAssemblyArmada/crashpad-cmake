@@ -38,11 +38,6 @@ else()
         /d2Zi+
         >
     )
-
-    target_link_options(crashpad_common INTERFACE
-        /INCREMENTAL:NO
-        /Debug:FASTLINK
-    )
 endif()
 
 if(WIN32)
