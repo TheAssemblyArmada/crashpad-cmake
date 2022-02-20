@@ -17,6 +17,7 @@ target_include_directories(crashpad_client PUBLIC
 target_link_libraries(crashpad_client PRIVATE
     minichromium
     crashpad_common
+	crashpad_compat
     crashpad_util
 )
 

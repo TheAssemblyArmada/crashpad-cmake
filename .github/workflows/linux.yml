@@ -8,10 +8,11 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         platform: [clang, gcc]
+        os: [ubuntu-18.04, ubuntu-20.04]
 
     steps:
     - uses: actions/checkout@v2
@@ -19,6 +20,18 @@ jobs:
         submodules: 'true'
         fetch-depth: 0
         ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Set variables
+      id: vars
+      run: |
+        if [ "${{ matrix.platform }}" = "clang" ]
+        then
+          echo "::set-output name=cc::clang"
+          echo "::set-output name=cxx::clang++"
+        else
+          echo "::set-output name=cc::gcc"
+          echo "::set-output name=cxx::g++"
+        fi
 
     - name: Configure CrashPad
       env:
