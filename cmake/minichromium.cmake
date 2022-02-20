@@ -21,7 +21,6 @@ target_sources(minichromium PRIVATE
     ${mini_chromium_git_SOURCE_DIR}/base/logging.cc
     ${mini_chromium_git_SOURCE_DIR}/base/process/memory.cc
     ${mini_chromium_git_SOURCE_DIR}/base/rand_util.cc
-    ${mini_chromium_git_SOURCE_DIR}/base/strings/string16.cc
     ${mini_chromium_git_SOURCE_DIR}/base/strings/string_number_conversions.cc
     ${mini_chromium_git_SOURCE_DIR}/base/strings/stringprintf.cc
     ${mini_chromium_git_SOURCE_DIR}/base/strings/utf_string_conversion_utils.cc
@@ -34,21 +33,21 @@ target_sources(minichromium PRIVATE
 if(WIN32)
     target_sources(minichromium PRIVATE 
         ${mini_chromium_git_SOURCE_DIR}/base/scoped_clear_last_error_win.cc
+        ${mini_chromium_git_SOURCE_DIR}/base/memory/page_size_win.cc
         ${mini_chromium_git_SOURCE_DIR}/base/strings/string_util_win.cc
         ${mini_chromium_git_SOURCE_DIR}/base/synchronization/lock_impl_win.cc
         ${mini_chromium_git_SOURCE_DIR}/base/threading/thread_local_storage_win.cc
-        ${mini_chromium_git_SOURCE_DIR}/base/process/process_metrics_win.cc
     )
 endif()
 
 if(UNIX)
     target_sources(minichromium PRIVATE
         ${mini_chromium_git_SOURCE_DIR}/base/files/file_util_posix.cc
+		${mini_chromium_git_SOURCE_DIR}/base/memory/page_size_posix.cc
         ${mini_chromium_git_SOURCE_DIR}/base/posix/safe_strerror.cc
         ${mini_chromium_git_SOURCE_DIR}/base/synchronization/condition_variable_posix.cc
         ${mini_chromium_git_SOURCE_DIR}/base/synchronization/lock_impl_posix.cc
         ${mini_chromium_git_SOURCE_DIR}/base/threading/thread_local_storage_posix.cc
-        ${mini_chromium_git_SOURCE_DIR}/base/process/process_metrics_posix.cc
     )
 endif()
 

@@ -120,6 +120,7 @@ if(APPLE)
         ${crashpad_git_SOURCE_DIR}/util/mac/launchd.mm
         ${crashpad_git_SOURCE_DIR}/util/mac/mac_util.cc
         ${crashpad_git_SOURCE_DIR}/util/mac/service_management.cc
+        ${crashpad_git_SOURCE_DIR}/util/mac/sysctl.cc
         ${crashpad_git_SOURCE_DIR}/util/mac/xattr.cc
         ${crashpad_git_SOURCE_DIR}/util/mach/bootstrap.cc
         ${crashpad_git_SOURCE_DIR}/util/mach/child_port_handshake.cc

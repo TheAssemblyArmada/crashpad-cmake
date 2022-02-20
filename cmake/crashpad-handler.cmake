@@ -35,6 +35,8 @@ if(APPLE)
         ${crashpad_git_SOURCE_DIR}/handler/mac/exception_handler_server.cc
         ${crashpad_git_SOURCE_DIR}/handler/mac/file_limit_annotation.cc
     )
+	# Hack to fix upstream backtrace fork not updating this var in line with minichromium.
+	target_compile_definitions(crashpad_handler_obj PRIVATE OS_MACOSX=1)
 endif()
 
 if(UNIX AND NOT APPLE)

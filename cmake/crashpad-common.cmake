@@ -8,6 +8,7 @@ if(NOT MSVC)
         -Werror
         -Wextra
         -Wno-missing-field-initializers
+		-Wno-noexcept-type
         -Wno-unused-parameter
         -Wno-implicit-fallthrough
         -Wsign-compare
@@ -19,6 +20,15 @@ if(NOT MSVC)
         -fdata-sections
         -ffunction-sections
     )
+	
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		target_compile_options(crashpad_common INTERFACE
+			-Wno-attributes
+			-Wno-ignored-qualifiers
+			-Wno-stringop-truncation
+			-Wno-restrict
+		)
+	endif()
 else()
     target_compile_options(crashpad_common INTERFACE
         $<$<COMPILE_LANGUAGE:CXX>:

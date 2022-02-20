@@ -36,7 +36,7 @@ endif()
 # Linux mostly.
 if(UNIX AND NOT APPLE)
     target_sources(crashpad_compat PRIVATE
-        ${crashpad_git_SOURCE_DIR}/compat/linux/sys/mman.cc
+        ${crashpad_git_SOURCE_DIR}/compat/linux/sys/mman_memfd_create.cc
     )
 
     target_include_directories(crashpad_compat PUBLIC

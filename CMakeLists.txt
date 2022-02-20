@@ -56,7 +56,7 @@ endif()
 FetchContent_Declare(
     mini_chromium_git
     GIT_REPOSITORY https://github.com/chromium/mini_chromium.git
-    GIT_TAG        ae14a14
+    GIT_TAG        9cdc2a7
 )
 
 if(NOT mini_chromium_git_POPULATED)
@@ -67,7 +67,7 @@ endif()
 FetchContent_Declare(
     crashpad_git
     GIT_REPOSITORY https://github.com/backtrace-labs/crashpad.git
-    GIT_TAG        558c961
+    GIT_TAG        7b9686b
 )
 
 if(NOT crashpad_git_POPULATED)
@@ -78,7 +78,7 @@ endif()
 FetchContent_Declare(
     lss_git
     GIT_REPOSITORY https://chromium.googlesource.com/linux-syscall-support
-    GIT_TAG        171a36a
+    GIT_TAG        e1e7b0a
 )
 
 if(NOT lss_git_POPULATED)
