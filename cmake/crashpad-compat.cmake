@@ -1,5 +1,5 @@
 # Compat library.
-if(APPLE)
+if(APPLE OR MINGW)
     add_library(crashpad_compat INTERFACE)
 else()
     add_library(crashpad_compat STATIC)
@@ -16,7 +16,7 @@ else()
 endif()
 
 
-if(WIN32)
+if(MSVC)
     target_sources(crashpad_compat PRIVATE
         ${crashpad_git_SOURCE_DIR}/compat/win/strings.cc
         ${crashpad_git_SOURCE_DIR}/compat/win/time.cc
@@ -26,6 +26,10 @@ if(WIN32)
     target_include_directories(crashpad_compat PUBLIC
         ${crashpad_git_SOURCE_DIR}/compat/win
         ${crashpad_git_SOURCE_DIR}/third_party/getopt
+    )
+elseif(MINGW)
+    target_include_directories(crashpad_compat INTERFACE
+        ${crashpad_git_SOURCE_DIR}/compat/mingw
     )
 else()
     target_include_directories(crashpad_compat INTERFACE
@@ -53,7 +57,7 @@ if(APPLE)
         ${crashpad_git_SOURCE_DIR}/compat/mac
     )
 else()
-    target_include_directories(crashpad_compat PUBLIC
+    target_include_directories(crashpad_compat INTERFACE
         ${crashpad_git_SOURCE_DIR}/compat/non_mac
     )
 endif()

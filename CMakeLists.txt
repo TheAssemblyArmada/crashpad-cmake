@@ -2,14 +2,25 @@ cmake_minimum_required(VERSION 3.11)
 project(crashpad LANGUAGES C CXX)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
-if(MSVC)
-    enable_language(ASM_MASM)
+if(WIN32)
+    if(MINGW)
+        set(ASM_DIALECT "_UASM")
+        enable_language(ASM_UASM)
+        if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+            set(CMAKE_ASM_UASM_FLAGS "-9 -coff")
+        else()
+            set(CMAKE_ASM_UASM_FLAGS "-10 -win64")
+        endif()
+    else()
+        enable_language(ASM_MASM)
+    endif()
 else()
     enable_language(ASM)
 endif()
 
 # Option to build unit tests.
-option(CRASHPAD_BUILD_TESTS "Build unit tests." OFF)
+string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_level)
+option(CRASHPAD_BUILD_TESTS "Build unit tests." "${is_top_level}")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -53,22 +64,42 @@ if(APPLE)
 endif()
 
 # Mini-Chromium
+if(MINGW)
+# Mini-Chromium needs some patches to build with MinGW, only works for a linux cross build
+FetchContent_Declare(
+    mini_chromium_git
+    GIT_REPOSITORY https://github.com/chromium/mini_chromium.git
+    GIT_TAG        ae14a14
+    PATCH_COMMAND git apply --ignore-space-change --ignore-whitespace ${CMAKE_CURRENT_SOURCE_DIR}/minichromium.patch || true
+)
+else()
 FetchContent_Declare(
     mini_chromium_git
     GIT_REPOSITORY https://github.com/chromium/mini_chromium.git
     GIT_TAG        ae14a14
 )
+endif()
 
 if(NOT mini_chromium_git_POPULATED)
     FetchContent_Populate(mini_chromium_git)
 endif()
 
 # Crashpad
+if(MINGW)
+# Crashpad needs some patches to build with MinGW, only works for a linux cross build
+FetchContent_Declare(
+    crashpad_git
+    GIT_REPOSITORY https://github.com/backtrace-labs/crashpad.git
+    GIT_TAG        558c961
+    PATCH_COMMAND git apply --ignore-space-change --ignore-whitespace ${CMAKE_CURRENT_SOURCE_DIR}/crashpad.patch || true
+)
+else()
 FetchContent_Declare(
     crashpad_git
     GIT_REPOSITORY https://github.com/backtrace-labs/crashpad.git
     GIT_TAG        558c961
 )
+endif()
 
 if(NOT crashpad_git_POPULATED)
     FetchContent_Populate(crashpad_git)
@@ -87,8 +118,8 @@ endif()
 
 file(COPY ${lss_git_SOURCE_DIR}/linux_syscall_support.h DESTINATION ${crashpad_git_SOURCE_DIR}/third_party/lss)
 
-include(crashpad-common)
 include(minichromium)
+include(crashpad-common)
 include(crashpad-compat)
 include(crashpad-tools)
 include(crashpad-util)
@@ -110,6 +141,7 @@ if(CRASHPAD_BUILD_TESTS)
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG        release-1.10.0
+        GIT_SHALLOW    ON
     )
 
     # We don't use FetchContent_MakeAvailable here because we don't want all googletest targets including, just our dependencies.

@@ -38,7 +38,7 @@ target_link_libraries(snapshot_test_support PRIVATE
 
 crashpad_add_test(crashpad_snapshot_test)
 
-if(NOT MSVC)
+if(NOT MSVC AND NOT APPLE)
     target_compile_options(crashpad_snapshot_test PRIVATE
         -Wno-maybe-uninitialized
     )

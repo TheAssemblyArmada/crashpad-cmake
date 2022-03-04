@@ -19,6 +19,18 @@ if(NOT MSVC)
         -fdata-sections
         -ffunction-sections
     )
+    
+    if(MINGW)
+        target_compile_options(crashpad_common INTERFACE
+            -Wno-sign-compare
+            -Wno-format
+            -Wno-unknown-pragmas
+            -Wno-attributes
+            -Wno-unused-function
+            -Wno-ignored-qualifiers
+            -Wno-cast-function-type
+        )
+    endif()
 else()
     target_compile_options(crashpad_common INTERFACE
         $<$<COMPILE_LANGUAGE:CXX>:
@@ -55,8 +67,17 @@ if(WIN32)
         winhttp.lib
         version.lib
         user32.lib
-        PowrProf.lib
+        powrprof.lib
     )
+    
+    if(MINGW)
+        target_compile_definitions(crashpad_common INTERFACE
+            _WIN32_WINNT=0x0600
+            __STDC_VERSION__=199901L
+        )
+        # Force a manual link to the stack protector library.
+        target_link_libraries(crashpad_common INTERFACE ssp)
+    endif()
 else()
     target_link_libraries(crashpad_common INTERFACE
       Threads::Threads
@@ -66,6 +87,10 @@ endif()
 
 if(APPLE)
     target_link_options(crashpad_common INTERFACE -Wl,-dead_strip)
+endif()
+
+if(MINGW)
+    target_link_options(crashpad_common INTERFACE -municode)
 endif()
 
 if(ANDROID)

@@ -1,0 +1,27 @@
+diff --git a/base/rand_util.cc b/base/rand_util.cc
+index ae5cdbf..5b5c98a 100644
+--- a/base/rand_util.cc
++++ b/base/rand_util.cc
+@@ -27,7 +27,7 @@
+ // "Community Additions" comment on MSDN here:
+ // http://msdn.microsoft.com/en-us/library/windows/desktop/aa387694.aspx
+ #define SystemFunction036 NTAPI SystemFunction036
+-#include <NTSecAPI.h>
++#include <ntsecapi.h>
+ #undef SystemFunction036
+ 
+ #endif  // OS_WIN
+diff --git a/base/strings/utf_string_conversion_utils.cc b/base/strings/utf_string_conversion_utils.cc
+index 964504b..e3e5cba 100644
+--- a/base/strings/utf_string_conversion_utils.cc
++++ b/base/strings/utf_string_conversion_utils.cc
+@@ -84,7 +84,9 @@ void PrepareForUTF8Output(const CHAR* src,
+ }
+ 
+ template void PrepareForUTF8Output(const wchar_t*, size_t, std::string*);
++#ifndef __MINGW32__
+ template void PrepareForUTF8Output(const char16*, size_t, std::string*);
++#endif
+ 
+ template<typename STRING>
+ void PrepareForUTF16Or32Output(const char* src,

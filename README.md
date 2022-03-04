@@ -5,7 +5,7 @@ Based on existing works to provide a CMake solution for Crashpad we've put this 
 
 ## Getting started
 
-There are various ways to include this in your own project. One is to just add it to your soruce tree if you want to customise it or maintain it yourself. Another is to add this repository as a submodule of your CMake project and then add it using the `add_submodule` directive. Finally you could use the CMake FetchContent module as follows:
+There are various ways to include this in your own project. One is to just add it to your soruce tree if you want to customise it or maintain it yourself. Another is to add this repository as a submodule of your CMake project and then add it using the `add_subdirectory` directive. Finally you could use the CMake FetchContent module as follows:
 
 ```CMake
 include(FetchContent)

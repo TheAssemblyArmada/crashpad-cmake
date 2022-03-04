@@ -60,7 +60,7 @@ target_sources(crashpad_minidump_test PRIVATE
     ${crashpad_git_SOURCE_DIR}/minidump/minidump_writable_test.cc
 )
 
-if(NOT MSVC)
+if(NOT MSVC AND NOT APPLE)
     target_compile_options(crashpad_minidump_test PRIVATE
         -Wno-maybe-uninitialized
     )

@@ -47,6 +47,7 @@ function(target_add_mig_sources target filename)
                 ${MIG_TARGET_DIR}/${basename}${MIG_SERVER_HEADER_SUFFIX}
                 --mig-path ${MIG_EXE}
                 --arch ${MIG_ARCH}
+                --clang-path ${CMAKE_C_COMPILER}
                 ${MIG_INCLUDE}
         COMMENT "Mig ${filename}" VERBATIM
     )
